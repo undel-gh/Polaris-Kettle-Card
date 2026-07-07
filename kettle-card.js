@@ -38,6 +38,7 @@
   // Confirmed labels for this kettle's water_heater operation_list
   // (off, performance, electric, heat_pump, eco), in that order.
   const DEFAULT_MODE_META = {    
+    off: { label: 'Выключен', icon: 'mdi:power' },
     performance: { label: 'Кипячение', icon: 'mdi:kettle-steam' },
     electric: { label: 'IQ Кипячение', icon: 'mdi:creation' },
     heat_pump: { label: 'Разогрев с удержанием', icon: 'mdi:thermometer-lines' },
