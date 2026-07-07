@@ -23,7 +23,7 @@
   const DEFAULT_PRESET_META = {
     not_selected: { label: 'Не выбрано', icon: 'mdi:close-circle-outline' },
     black_tea: { label: 'Чёрный чай', icon: 'mdi:tea' },
-    baby_bottle: { label: 'Детская бутылочка', icon: 'mdi:baby-bottle-outline' },
+    baby_bottle: { label: 'Детская смесь', icon: 'mdi:baby-bottle-outline' },
     instant_coffee: { label: 'Растворимый кофе', icon: 'mdi:coffee' },
     green_tea: { label: 'Зелёный чай', icon: 'mdi:leaf' },
     flower_tea: { label: 'Цветочный чай', icon: 'mdi:flower-tulip-outline' },
@@ -35,16 +35,14 @@
     herbal_tea: { label: 'Травяной чай', icon: 'mdi:sprout-outline' },
   };
 
-  // NB: the water_heater domain's generic operation_list names
-  // (performance/electric/heat_pump/eco) don't map to anything documented
-  // for this integration — labels below are a best-effort guess. Override
-  // via `mode_labels` in the card config if they don't match your kettle.
+  // Confirmed labels for this kettle's water_heater operation_list
+  // (off, performance, electric, heat_pump, eco), in that order.
   const DEFAULT_MODE_META = {
-    off: { label: 'Выкл', icon: 'mdi:power' },
-    performance: { label: 'Быстрый нагрев', icon: 'mdi:fire' },
-    electric: { label: 'Стандарт', icon: 'mdi:kettle-steam' },
-    heat_pump: { label: 'Поддержание', icon: 'mdi:thermometer-lines' },
-    eco: { label: 'Эко', icon: 'mdi:leaf-circle-outline' },
+    off: { label: 'Выключен', icon: 'mdi:power' },
+    performance: { label: 'Кипячение', icon: 'mdi:kettle-steam' },
+    electric: { label: 'IQ Кипячение', icon: 'mdi:creation' },
+    heat_pump: { label: 'Разогрев с удержанием', icon: 'mdi:thermometer-lines' },
+    eco: { label: 'Разогрев', icon: 'mdi:fire' },
   };
 
   const ENTITY_KEYS = [
