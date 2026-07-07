@@ -37,17 +37,16 @@
 
   // Confirmed labels for this kettle's water_heater operation_list
   // (off, performance, electric, heat_pump, eco), in that order.
-  const DEFAULT_MODE_META = {    
+  const DEFAULT_MODE_META = {
     off: { label: 'Выключен', icon: 'mdi:power' },
     performance: { label: 'Кипячение', icon: 'mdi:kettle-steam' },
     electric: { label: 'IQ Кипячение', icon: 'mdi:creation' },
-    heat_pump: { label: 'Разогрев с удержанием', icon: 'mdi:thermometer-lines' },
+    heat_pump: { label: 'Удержание', title: 'Разогрев с удержанием', icon: 'mdi:thermometer-lines' },
     eco: { label: 'Разогрев', icon: 'mdi:fire' },
   };
 
   const ENTITY_KEYS = [
     'water_heater',
-    'power',
     'temperature',
     'mode_select',
     'night_light',
@@ -60,6 +59,26 @@
     'firmware',
     'device_type',
   ];
+
+  // A small curated palette for the night light color picker — kept as
+  // discrete swatches (rather than a continuous color input) so a single
+  // tap sets the color without relying on a native picker that could get
+  // interrupted by a re-render.
+  const NIGHT_LIGHT_SWATCHES = [
+    '#ffffff',
+    '#ffb74d',
+    '#ff5252',
+    '#e91e8c',
+    '#7c4dff',
+    '#2979ff',
+    '#26c6da',
+    '#4caf50',
+  ];
+
+  function hexToRgb(hex) {
+    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : [255, 255, 255];
+  }
 
   function clamp(v, min, max) {
     return Math.min(max, Math.max(min, v));
@@ -121,7 +140,6 @@
           entities.water_heater = wh;
           const guess = (domain, suffix) => `${domain}.${base}_${suffix}`;
           const tryIt = (id) => (hass.states[id] ? id : undefined);
-          entities.power = tryIt(guess('switch', 'power'));
           entities.temperature = tryIt(guess('sensor', 'temperature'));
           entities.mode_select = tryIt(guess('select', 'select_mode_kettle'));
           entities.night_light = tryIt(guess('light', 'night'));
@@ -182,8 +200,7 @@
       const targetTemp = attrs.temperature ?? 100;
       const minTemp = attrs.min_temp ?? 30;
       const maxTemp = attrs.max_temp ?? 100;
-      // const step = attrs.target_temp_step ?? 5;
-      const step = 5;
+      const step = attrs.target_temp_step ?? 5;
       const opMode = attrs.operation_mode ?? whState.state ?? 'off';
       const opList = attrs.operation_list || Object.keys(this._modeMeta);
       const heating = opMode && opMode !== 'off';
@@ -201,7 +218,6 @@
       const presetOptions = modeSelect ? modeSelect.attributes.options || [] : [];
       const presetSelected = modeSelect ? modeSelect.state : null;
 
-      
       const backlightSw = this._state('backlight');
       const childLockSw = this._state('child_lock');
       const soundSw = this._state('sound');
@@ -224,6 +240,7 @@
         .join('');
 
       const modeChips = opList
+        .filter((m) => m !== 'off')
         .map((m) => {
           const meta = this._modeMeta[m] || { label: m, icon: 'mdi:tune' };
           const active = m === opMode;
@@ -240,6 +257,35 @@
           <ha-icon icon="${icon}"></ha-icon><span>${label}</span>
         </button>`;
       };
+
+      let nightLightPanel = '';
+      if (nightLight) {
+        const nlOn = nightLight.state === 'on';
+        const nlAttrs = nightLight.attributes || {};
+        const brightness = nlAttrs.brightness ?? 255;
+        const brightnessPct = Math.round((brightness / 255) * 100);
+        const swatches = NIGHT_LIGHT_SWATCHES.map(
+          (hex) =>
+            `<button class="swatch" style="background:${hex}" data-action="nl-color" data-hex="${hex}" title="${hex}"></button>`
+        ).join('');
+        nightLightPanel = `
+          <div class="section-label" data-action="more-info" data-key="night_light">Ночник</div>
+          <div class="night-light-panel">
+            <button class="toggle ${nlOn ? 'toggle-on' : ''}" data-action="toggle" data-key="night_light" title="Ночник">
+              <ha-icon icon="mdi:weather-night"></ha-icon><span>${nlOn ? 'Вкл' : 'Выкл'}</span>
+            </button>
+            <div class="swatches">${swatches}</div>
+            <div class="stepper">
+              <button class="step-btn" data-action="nl-bright-down">
+                <ha-icon icon="mdi:brightness-4"></ha-icon>
+              </button>
+              <span class="step-value">${brightnessPct}%</span>
+              <button class="step-btn" data-action="nl-bright-up">
+                <ha-icon icon="mdi:brightness-6"></ha-icon>
+              </button>
+            </div>
+          </div>`;
+      }
 
       const bars = signalBars(rssi ? rssi.state : undefined);
 
@@ -313,12 +359,13 @@
               }
 
               <div class="section-label">Дополнительно</div>
-              <div class="toggle-row">                
+              <div class="toggle-row">
                 ${toggleChip('backlight', backlightSw, 'mdi:led-outline', 'Подсветка')}
                 ${toggleChip('sound', soundSw, 'mdi:volume-high', 'Звук')}
                 ${toggleChip('child_lock', childLockSw, 'mdi:lock', 'Блокировка')}
-                ${toggleChip('night_light', nightLight, 'mdi:weather-night', 'Ночник')}
               </div>
+
+              ${nightLightPanel}
             </div>
           </div>
 
@@ -397,6 +444,34 @@
           this._call(domain, 'toggle', { entity_id: entityId });
         });
       });
+
+      const nlId = this._config.entities.night_light;
+      if (nlId) {
+        root.querySelectorAll('[data-action="nl-color"]').forEach((el) => {
+          el.addEventListener('click', () => {
+            const rgb = hexToRgb(el.getAttribute('data-hex'));
+            this._call('light', 'turn_on', { entity_id: nlId, rgb_color: rgb });
+          });
+        });
+
+        const nightLight = this._state('night_light');
+        const currentBrightness = (nightLight && nightLight.attributes.brightness) ?? 255;
+
+        const brightUp = root.querySelector('[data-action="nl-bright-up"]');
+        if (brightUp) {
+          brightUp.addEventListener('click', () => {
+            const next = clamp(currentBrightness + 26, 1, 255);
+            this._call('light', 'turn_on', { entity_id: nlId, brightness: next });
+          });
+        }
+        const brightDown = root.querySelector('[data-action="nl-bright-down"]');
+        if (brightDown) {
+          brightDown.addEventListener('click', () => {
+            const next = clamp(currentBrightness - 26, 1, 255);
+            this._call('light', 'turn_on', { entity_id: nlId, brightness: next });
+          });
+        }
+      }
     }
 
     _css() {
@@ -624,17 +699,36 @@
           background: transparent;
           color: var(--primary-text-color);
           border-radius: 999px;
-          padding: 5px 10px;
-          font-size: 0.8em;
+          padding: 4px 9px;
+          font-size: 0.76em;
+          white-space: nowrap;
           cursor: pointer;
         }
         .chip ha-icon {
-          --mdc-icon-size: 15px;
+          --mdc-icon-size: 14px;
         }
         .chip-active {
           background: var(--kc-water-cold);
           border-color: var(--kc-water-cold);
           color: #fff;
+        }
+        .night-light-panel {
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .swatches {
+          display: flex;
+          gap: 4px;
+        }
+        .swatch {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          border: 1px solid var(--divider-color, #e0e0e0);
+          padding: 0;
+          cursor: pointer;
         }
         .toggle {
           display: flex;
@@ -712,7 +806,7 @@
 
     _fieldDef() {
       return [
-        ['water_heater', 'water_heater', 'Нагрев (обязательно)'],        
+        ['water_heater', 'water_heater', 'Нагрев (обязательно)'],
         ['temperature', 'sensor', 'Температура'],
         ['mode_select', 'select', 'Предустановки напитков'],
         ['night_light', 'light', 'Ночник'],
