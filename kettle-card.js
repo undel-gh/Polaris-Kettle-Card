@@ -182,7 +182,8 @@
       const targetTemp = attrs.temperature ?? 100;
       const minTemp = attrs.min_temp ?? 30;
       const maxTemp = attrs.max_temp ?? 100;
-      const step = attrs.target_temp_step ?? 5;
+      // const step = attrs.target_temp_step ?? 5;
+      const step = 5;
       const opMode = attrs.operation_mode ?? whState.state ?? 'off';
       const opList = attrs.operation_list || Object.keys(this._modeMeta);
       const heating = opMode && opMode !== 'off';
