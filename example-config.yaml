@@ -1,0 +1,16 @@
+type: custom:kettle-card
+name: Чайник
+entities:
+  water_heater: water_heater.kettle_pwk_1725cgld_water_heater
+  power: switch.kettle_pwk_1725cgld_power
+  temperature: sensor.kettle_pwk_1725cgld_temperature
+  mode_select: select.kettle_pwk_1725cgld_select_mode_kettle
+  night_light: light.kettle_pwk_1725cgld_night
+  backlight: switch.kettle_pwk_1725cgld_backlight
+  child_lock: switch.kettle_pwk_1725cgld_child_lock
+  sound: switch.kettle_pwk_1725cgld_sound
+  available: binary_sensor.kettle_pwk_1725cgld_available
+  error: sensor.kettle_pwk_1725cgld_error
+  rssi: sensor.kettle_pwk_1725cgld_rssi
+  firmware: sensor.kettle_pwk_1725cgld_firmware_version
+  device_type: sensor.kettle_pwk_1725cgld_device_type
