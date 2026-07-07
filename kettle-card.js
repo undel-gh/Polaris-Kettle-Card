@@ -676,14 +676,36 @@
   // Minimal visual editor (entity pickers) for the Lovelace UI editor
   // -----------------------------------------------------------------
   class KettleCardEditor extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      this._built = false;
+    }
+
     setConfig(config) {
       this._config = { entities: {}, ...config };
-      this._render();
+      if (!this._built) {
+        this._buildDom();
+        this._built = true;
+      }
+      this._syncValues();
     }
 
     set hass(hass) {
       this._hass = hass;
-      this._render();
+      if (!this._built && this._config) {
+        this._buildDom();
+        this._built = true;
+        this._syncValues();
+      }
+      // Only push the updated hass reference into already-existing pickers —
+      // never rebuild markup here, or every hass tick (several times a
+      // second) would recreate the pickers and close any open dropdown.
+      if (this.shadowRoot) {
+        this.shadowRoot.querySelectorAll('ha-entity-picker').forEach((picker) => {
+          picker.hass = hass;
+        });
+      }
     }
 
     _fieldDef() {
@@ -704,14 +726,13 @@
       ];
     }
 
-    _render() {
-      if (!this._hass || !this._config) return;
-      if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
-
+    // Builds the static markup + pickers exactly once. Called either from
+    // setConfig or from the first hass assignment, whichever happens first.
+    _buildDom() {
       const nameRow = `
         <div class="row">
           <label>Название карточки</label>
-          <input id="name" type="text" value="${this._config.name || ''}" />
+          <input id="name" type="text" />
         </div>`;
 
       const rows = this._fieldDef()
@@ -721,8 +742,6 @@
           <label>${label}</label>
           <ha-entity-picker
             data-key="${key}"
-            .hass="${''}"
-            .value="${this._config.entities[key] || ''}"
             .includeDomains='["${domain}"]'
             allow-custom-entity
           ></ha-entity-picker>
@@ -740,9 +759,8 @@
         <div class="editor">${nameRow}${rows}</div>
       `;
 
-      // ha-entity-picker needs its `hass` property set imperatively (attrs won't work)
       this.shadowRoot.querySelectorAll('ha-entity-picker').forEach((picker) => {
-        picker.hass = this._hass;
+        if (this._hass) picker.hass = this._hass;
         picker.addEventListener('value-changed', (ev) => {
           ev.stopPropagation();
           const key = picker.getAttribute('data-key');
@@ -756,6 +774,21 @@
       nameInput.addEventListener('change', () => {
         this._config = { ...this._config, name: nameInput.value };
         this._fireChanged();
+      });
+    }
+
+    // Pushes current config values into the already-built inputs/pickers
+    // without touching the DOM structure, so nothing loses focus.
+    _syncValues() {
+      if (!this.shadowRoot) return;
+      const nameInput = this.shadowRoot.getElementById('name');
+      if (nameInput && nameInput.value !== (this._config.name || '') && document.activeElement !== nameInput) {
+        nameInput.value = this._config.name || '';
+      }
+      this.shadowRoot.querySelectorAll('ha-entity-picker').forEach((picker) => {
+        const key = picker.getAttribute('data-key');
+        const desired = this._config.entities[key] || '';
+        if (picker.value !== desired) picker.value = desired;
       });
     }
 
