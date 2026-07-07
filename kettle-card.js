@@ -698,12 +698,16 @@
         this._built = true;
         this._syncValues();
       }
-      // Only push the updated hass reference into already-existing pickers —
-      // never rebuild markup here, or every hass tick (several times a
-      // second) would recreate the pickers and close any open dropdown.
+      // IMPORTANT: do NOT reassign `.hass` on pickers that already have it.
+      // hass updates arrive several times a second (the kettle's own
+      // temperature/rssi sensors keep changing), and re-setting `.hass` on
+      // an already-initialized ha-entity-picker makes it re-render
+      // internally, which closes any dropdown the user currently has open.
+      // Each picker only needs `hass` once to build its entity list; giving
+      // it fresh data afterward isn't worth breaking mid-selection.
       if (this.shadowRoot) {
         this.shadowRoot.querySelectorAll('ha-entity-picker').forEach((picker) => {
-          picker.hass = hass;
+          if (!picker.hass) picker.hass = hass;
         });
       }
     }
