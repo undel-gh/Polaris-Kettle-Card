@@ -37,8 +37,7 @@
 
   // Confirmed labels for this kettle's water_heater operation_list
   // (off, performance, electric, heat_pump, eco), in that order.
-  const DEFAULT_MODE_META = {
-    off: { label: 'Выключен', icon: 'mdi:power' },
+  const DEFAULT_MODE_META = {    
     performance: { label: 'Кипячение', icon: 'mdi:kettle-steam' },
     electric: { label: 'IQ Кипячение', icon: 'mdi:creation' },
     heat_pump: { label: 'Разогрев с удержанием', icon: 'mdi:thermometer-lines' },
@@ -200,7 +199,7 @@
       const presetOptions = modeSelect ? modeSelect.attributes.options || [] : [];
       const presetSelected = modeSelect ? modeSelect.state : null;
 
-      const powerSw = this._state('power');
+      
       const backlightSw = this._state('backlight');
       const childLockSw = this._state('child_lock');
       const soundSw = this._state('sound');
@@ -312,8 +311,7 @@
               }
 
               <div class="section-label">Дополнительно</div>
-              <div class="toggle-row">
-                ${toggleChip('power', powerSw, 'mdi:power-plug', 'Питание')}
+              <div class="toggle-row">                
                 ${toggleChip('backlight', backlightSw, 'mdi:led-outline', 'Подсветка')}
                 ${toggleChip('sound', soundSw, 'mdi:volume-high', 'Звук')}
                 ${toggleChip('child_lock', childLockSw, 'mdi:lock', 'Блокировка')}
@@ -712,8 +710,7 @@
 
     _fieldDef() {
       return [
-        ['water_heater', 'water_heater', 'Нагрев (обязательно)'],
-        ['power', 'switch', 'Питание'],
+        ['water_heater', 'water_heater', 'Нагрев (обязательно)'],        
         ['temperature', 'sensor', 'Температура'],
         ['mode_select', 'select', 'Предустановки напитков'],
         ['night_light', 'light', 'Ночник'],
