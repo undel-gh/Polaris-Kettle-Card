@@ -122,6 +122,19 @@
 
     set hass(hass) {
       this._hass = hass;
+      // A native <select> stays focused for as long as its dropdown is
+      // open. If we rebuild the whole card's innerHTML while that's true
+      // (hass ticks arrive several times a second thanks to the kettle's
+      // own temperature/rssi sensors), the browser closes the dropdown out
+      // from under the user. So: skip rendering while a form control has
+      // focus, and just render once it loses focus (blur handler below).
+      const active = this.shadowRoot && this.shadowRoot.activeElement;
+      const isEditing = active && (active.tagName === 'SELECT' || active.tagName === 'INPUT');
+      if (isEditing) {
+        this._pendingRender = true;
+        return;
+      }
+      this._pendingRender = false;
       this._render();
     }
 
@@ -423,6 +436,12 @@
             entity_id: this._config.entities.mode_select,
             option: presetSelectEl.value,
           });
+        });
+        presetSelectEl.addEventListener('blur', () => {
+          if (this._pendingRender) {
+            this._pendingRender = false;
+            this._render();
+          }
         });
       }
 
