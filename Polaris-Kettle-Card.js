@@ -1,6 +1,6 @@
 /**
- * Kettle Card
- * A single custom Lovelace card for a smart kettle (water_heater + switches +
+ * Polaris Kettle Card
+ * A single custom Lovelace card for a Polaris 1725 CGLD smart kettle (water_heater + switches +
  * select + light + sensors), built for Home Assistant.
  *
  * No build step required — plain Custom Element, works by dropping the file
@@ -10,7 +10,7 @@
   const CARD_VERSION = '1.0.0';
   // eslint-disable-next-line no-console
   console.info(
-    '%c KETTLE-CARD %c v' + CARD_VERSION + ' ',
+    '%c POLARIS-KETTLE-CARD %c v' + CARD_VERSION + ' ',
     'color:#fff;background:#2AA9C4;font-weight:700;border-radius:3px 0 0 3px;padding:2px 0 2px 6px;',
     'color:#2AA9C4;background:transparent;font-weight:700;padding:2px 6px 2px 0;'
   );
@@ -948,14 +948,14 @@
     }
   }
 
-  customElements.define('kettle-card', KettleCard);
-  customElements.define('kettle-card-editor', KettleCardEditor);
+  customElements.define('polaris-kettle-card', KettleCard);
+  customElements.define('polaris-kettle-card-editor', KettleCardEditor);
 
   window.customCards = window.customCards || [];
   window.customCards.push({
-    type: 'kettle-card',
-    name: 'Kettle Card',
-    description: 'Единая карточка для умного чайника: нагрев, режимы, напитки, статус.',
+    type: 'polaris-kettle-card',
+    name: 'Polaris Kettle Card',
+    description: 'Единая карточка для умного чайника Polaris 1725CGLD: нагрев, режимы, напитки, статус.',
     preview: true,
   });
 })();

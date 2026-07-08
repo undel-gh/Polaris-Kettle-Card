@@ -1,4 +1,4 @@
-type: custom:kettle-card
+type: custom:polaris-kettle-card
 name: Чайник
 entities:
   water_heater: water_heater.kettle_pwk_1725cgld_water_heater
