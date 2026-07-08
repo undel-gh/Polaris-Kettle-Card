@@ -1,5 +1,9 @@
 # Polaris Kettle Card
 
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+![GitHub release](https://img.shields.io/github/v/release/undel-gh/Redmond-oven-card)
+![License](https://img.shields.io/github/license/undel-gh/Redmond-oven-card)
+
 Единая Lovelace-карточка для умного чайника в Home Assistant: запуск/остановка нагрева,
 выбор режима нагрева, выбор напитка (пресета), управление целевой температурой,
 переключатели (питание, подсветка, звук, блокировка, ночник) и статус устройства
