@@ -10,6 +10,11 @@
 
 Карточка разработана для чайника Polaris 1725CGLD. Совместимость с другими чайниками не проверялась.
 
+Пример карточки:
+
+<img width="408" height="435" alt="image" src="https://github.com/user-attachments/assets/4f67a7f7-bb23-4778-a2d6-8e7039ffa000" />
+
+
 ## Установка
 
 ### Вручную
