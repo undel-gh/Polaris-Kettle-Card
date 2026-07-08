@@ -229,15 +229,17 @@
 
       const fillPct = clamp(((displayTemp - 20) / (100 - 20)) * 100, 4, 100);
 
-      const presetChips = presetOptions
-        .map((opt) => {
-          const meta = this._presetMeta[opt] || { label: opt, icon: 'mdi:cup' };
-          const active = opt === presetSelected;
-          return `<button class="chip ${active ? 'chip-active' : ''}" data-action="preset" data-value="${opt}" title="${meta.label}">
-            <ha-icon icon="${meta.icon}"></ha-icon><span>${meta.label}</span>
-          </button>`;
-        })
-        .join('');
+      const presetSelectHtml = presetOptions.length
+        ? `<select class="preset-select" data-action="preset-select">
+            ${presetOptions
+              .map((opt) => {
+                const meta = this._presetMeta[opt] || { label: opt };
+                const selected = opt === presetSelected ? 'selected' : '';
+                return `<option value="${opt}" ${selected}>${meta.label}</option>`;
+              })
+              .join('')}
+          </select>`
+        : '';
 
       const modeChips = opList
         .filter((m) => m !== 'off')
@@ -354,7 +356,10 @@
               ${
                 presetOptions.length
                   ? `<div class="section-label" data-action="more-info" data-key="mode_select">Напиток</div>
-                     <div class="chip-row">${presetChips}</div>`
+                     <div class="preset-row">
+                       <ha-icon class="preset-icon" icon="${(this._presetMeta[presetSelected] || {}).icon || 'mdi:cup'}"></ha-icon>
+                       ${presetSelectHtml}
+                     </div>`
                   : ''
               }
 
@@ -411,14 +416,15 @@
         });
       });
 
-      root.querySelectorAll('[data-action="preset"]').forEach((el) => {
-        el.addEventListener('click', () => {
+      const presetSelectEl = root.querySelector('[data-action="preset-select"]');
+      if (presetSelectEl) {
+        presetSelectEl.addEventListener('change', () => {
           this._call('select', 'select_option', {
             entity_id: this._config.entities.mode_select,
-            option: el.getAttribute('data-value'),
+            option: presetSelectEl.value,
           });
         });
-      });
+      }
 
       const stepUp = root.querySelector('[data-action="temp-up"]');
       if (stepUp) {
@@ -711,6 +717,31 @@
           background: var(--kc-water-cold);
           border-color: var(--kc-water-cold);
           color: #fff;
+        }
+        .preset-row {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .preset-icon {
+          color: var(--kc-water-hot);
+          flex: 0 0 auto;
+          --mdc-icon-size: 20px;
+        }
+        .preset-select {
+          flex: 1;
+          appearance: none;
+          -webkit-appearance: none;
+          background: var(--card-background-color, #fff)
+            url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23888' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E")
+            no-repeat right 8px center;
+          background-size: 18px;
+          color: var(--primary-text-color);
+          border: 1px solid var(--divider-color, #e0e0e0);
+          border-radius: 8px;
+          padding: 7px 30px 7px 10px;
+          font-size: 0.88em;
+          cursor: pointer;
         }
         .night-light-panel {
           display: flex;
