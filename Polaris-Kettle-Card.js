@@ -106,7 +106,7 @@
     setConfig(config) {
       if (!config || !config.entities || !config.entities.water_heater) {
         throw new Error(
-          'kettle-card: в конфигурации нужно указать как минимум entities.water_heater'
+          'polaris-kettle-card: в конфигурации нужно указать как минимум entities.water_heater'
         );
       }
       this._config = {
@@ -167,11 +167,11 @@
           Object.keys(entities).forEach((k) => entities[k] === undefined && delete entities[k]);
         }
       }
-      return { type: 'custom:kettle-card', name: 'Чайник', entities };
+      return { type: 'custom:polaris-kettle-card', name: 'Чайник', entities };
     }
 
     static getConfigElement() {
-      return document.createElement('kettle-card-editor');
+      return document.createElement('polaris-kettle-card-editor');
     }
 
     // -- helpers ------------------------------------------------------
